@@ -74,6 +74,10 @@ export function promiseUninstall(param: UninstallParameterObject): Promise<void>
 					if (param.plugin)
 						conf.removeOperationPlugin(param.moduleNames[0]);
 					conf.vacuumGlobalScripts();
+					var globalScripts = conf._content.globalScripts;
+					var packageJsons = cmn.NodeModules.listPackageJsonsFromScriptsPath(".", globalScripts);
+					var moduleMainScripts = cmn.NodeModules.listModuleMainScripts(packageJsons);
+					conf._content.moduleMainScripts = moduleMainScripts;
 					return cmn.ConfigurationFile.write(conf.getContent(), "./game.json", param.logger);
 				});
 		})
