@@ -159,4 +159,61 @@ describe("uninstall()", function () {
 			})
 			.then(done, done.fail);
 	});
+
+	it("output warning message when moduleMainScript doesn't existed in game.json", function (done) {
+		var warnLogs: string[] = [];
+
+		class Logger extends cmn.ConsoleLogger {
+			warn(message: any) {
+				warnLogs.push(message);
+			}
+		}
+		var logger = new Logger();
+
+		const mockfsContent: any = {
+			testdir: {
+				foo: {
+					"game.json": JSON.stringify({
+						width: 10,
+						height: 20,
+						fps: 30,
+						globalScripts: [
+							"node_modules/foo/lib/index.js",
+							"node_modules/foo/lib/sub.js",
+							"node_modules/foo/node_modules/bar/index.js",
+							"node_modules/foo/package.json",
+							"node_modules/buzz/main.js",
+							"node_modules/buzz/sub/foo.js",
+							"node_modules/buzz/package.json"
+						]
+					})
+				}
+			}
+		};
+		mockfs(mockfsContent);
+
+		class DummyNpm extends cmn.PromisedNpm {
+			constructor() {
+				super({ logger });
+			}
+			uninstall(names?: string[]) { return Promise.resolve(); }
+			shrinkwrap(names?: string[]) { return Promise.resolve(); }
+		}
+		var dummyNpm = new DummyNpm();
+
+		Promise.resolve()
+		.then(() => promiseUninstall({
+			moduleNames: ["foo"],
+			cwd: "./testdir/foo/",
+			plugin: true,
+			debugNpm: dummyNpm,
+			logger: logger
+		}))
+		.then(() => cmn.ConfigurationFile.read("./testdir/foo/game.json", logger))
+		.then((content: cmn.GameConfiguration) => {
+			expect(warnLogs.length).toBe(1);
+			expect(warnLogs[0]).toBe("`moduleMainScripts` doesn't existed in game.json. Please use akashic-engine@>=2.0.1, >=1.11.2");
+			done();
+		}).catch(e => done.fail(e));
+	});
 });

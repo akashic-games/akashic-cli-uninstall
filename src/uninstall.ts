@@ -77,6 +77,9 @@ export function promiseUninstall(param: UninstallParameterObject): Promise<void>
 					var globalScripts = conf._content.globalScripts;
 					var packageJsons = cmn.NodeModules.listPackageJsonsFromScriptsPath(".", globalScripts);
 					var moduleMainScripts = cmn.NodeModules.listModuleMainScripts(packageJsons);
+					if (! conf._content.moduleMainScripts) {
+						param.logger.warn("`moduleMainScripts` doesn't existed in game.json. Please use akashic-engine@>=2.0.1, >=1.11.2");
+					}
 					conf._content.moduleMainScripts = moduleMainScripts;
 					return cmn.ConfigurationFile.write(conf.getContent(), "./game.json", param.logger);
 				});
