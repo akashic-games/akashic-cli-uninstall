@@ -48,7 +48,8 @@ describe("uninstall()", function () {
 							"package.json": JSON.stringify({
 								name: "foo",
 								version: "0.0.0",
-								dependencies: "bar"
+								dependencies: "bar",
+								main: "lib/index.js"
 							}),
 						},
 						buzz: {
@@ -59,7 +60,8 @@ describe("uninstall()", function () {
 							"package.json": JSON.stringify({
 								name: "buzz",
 								version: "0.0.0",
-								dependencies: "sub"
+								dependencies: "sub",
+								main: "main.js"
 							}),
 						}
 					},
@@ -71,11 +73,13 @@ describe("uninstall()", function () {
 							"node_modules/foo/lib/index.js",
 							"node_modules/foo/lib/sub.js",
 							"node_modules/foo/node_modules/bar/index.js",
-							"node_modules/foo/package.json",
 							"node_modules/buzz/main.js",
-							"node_modules/buzz/sub/foo.js",
-							"node_modules/buzz/package.json"
-						]
+							"node_modules/buzz/sub/foo.js"
+						],
+						moduleMainScripts: {
+							"foo": "node_modules/foo/index.js",
+							"buzz": "node_modules/buzz/main.js"
+						}
 					})
 				}
 			}
@@ -128,9 +132,12 @@ describe("uninstall()", function () {
 				var globalScripts = content.globalScripts;
 				expect(globalScripts).toEqual([
 					"node_modules/buzz/main.js",
-					"node_modules/buzz/sub/foo.js",
-					"node_modules/buzz/package.json"
+					"node_modules/buzz/sub/foo.js"
 				]);
+				var moduleMainScripts = content.moduleMainScripts;
+				expect(moduleMainScripts).toEqual({
+					"buzz": "node_modules/buzz/main.js"
+				});
 			})
 			.then(() => promiseUninstall({
 				moduleNames: ["buzz"],
@@ -147,6 +154,8 @@ describe("uninstall()", function () {
 				expect(dummyNpm.shrinkwrapCount).toBe(1);  // unlink
 				var globalScripts = content.globalScripts;
 				expect(globalScripts).toEqual([]);
+				var moduleMainScripts = content.moduleMainScripts;
+				expect(moduleMainScripts).toBeUndefined();
 			})
 			.then(done, done.fail);
 	});
