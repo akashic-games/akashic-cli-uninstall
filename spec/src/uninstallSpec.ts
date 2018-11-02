@@ -2,23 +2,24 @@ import * as mockfs from "mock-fs";
 import * as cmn from "@akashic/akashic-cli-commons";
 import { uninstall, promiseUninstall } from "../../lib/uninstall";
 
+
 describe("uninstall()", function () {
 	afterEach(function () {
 		mockfs.restore();
 	});
 
-	it("rejects multiple module names if plugin opetion is given", function (done) {
+	it("rejects multiple module names if plugin opetion is given",  function (done: any) {
 		mockfs({});
 		uninstall({ moduleNames: ["foo", "bar"], plugin: true }, (err) => (err ? done() : done.fail()));
 	});
 
-	it("handles npm failure", function (done) {
+	it("handles npm failure", (done: any) => {
 		mockfs({});
 		var shrinkwrapCalled = false;
 		class DummyNpm extends cmn.PromisedNpm {
 			uninstall(names?: string[]) { return Promise.reject("UninstallFail:" + names); }
 			shrinkwrap(names?: string[]) { shrinkwrapCalled = true; return Promise.resolve(); }
-		};
+		}
 		var logger = new cmn.ConsoleLogger({ quiet: true, debugLogMethod: () => {/* do nothing */} });
 		Promise.resolve()
 			.then(() => promiseUninstall({
@@ -30,7 +31,7 @@ describe("uninstall()", function () {
 			.then(done.fail, done);
 	});
 
-	it("removes declaration from globalScripts", function (done) {
+	it("removes declaration from globalScripts", function (done: any) {
 		const mockfsContent: any = {
 			testdir: {
 				foo: {
@@ -50,7 +51,7 @@ describe("uninstall()", function () {
 								version: "0.0.0",
 								dependencies: "bar",
 								main: "lib/index.js"
-							}),
+							})
 						},
 						buzz: {
 							sub: {
@@ -62,7 +63,7 @@ describe("uninstall()", function () {
 								version: "0.0.0",
 								dependencies: "sub",
 								main: "main.js"
-							}),
+							})
 						}
 					},
 					"game.json": JSON.stringify({

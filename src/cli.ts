@@ -21,7 +21,7 @@ function cli(param: CommandParameterObject): void {
 			logger.error(err, err.cause);
 			process.exit(1);
 		});
-};
+}
 
 var ver = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8")).version;
 
