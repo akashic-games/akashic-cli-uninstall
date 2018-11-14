@@ -8,15 +8,10 @@ var shell = require("gulp-shell");
 var reporters = require("jasmine-reporters");
 var Reporter = require("jasmine-terminal-reporter");
 
-gulp.task("install:typings", shell.task(["gulp install:typings:src", "gulp install:typings:spec"]));
-gulp.task("install:typings:src", shell.task("typings install"));
-gulp.task("install:typings:spec", shell.task("typings install", { cwd: "spec/" }));
-
-gulp.task("clean", function(cb) { del(["lib", "spec/build"], cb); });
-gulp.task("clean:typings", function (cb) { del(["typings", "spec/typings"], cb); });
+gulp.task("clean", function(cb) { return del(["lib", "spec/build"], cb); });
 
 gulp.task("compile", shell.task("tsc"));
-gulp.task("compile:spec", ["compile"], shell.task("tsc -p spec/"));
+gulp.task("compile:spec", gulp.series("compile", shell.task("tsc -p spec/")));
 
 gulp.task("lint", function(){
 	return gulp.src("src/**/*.ts")
@@ -29,7 +24,7 @@ gulp.task("lint-md", function(){
 		.pipe(shell(["mdast <%= file.path %> --frail --no-stdout --quiet"]));
 });
 
-gulp.task("test", ["compile:spec"], function(cb) {
+gulp.task("test", gulp.series("compile:spec", function(cb) {
 	var jasmineReporters = [ new Reporter({
 			isVerbose: true,
 			showColors: true,
@@ -37,7 +32,7 @@ gulp.task("test", ["compile:spec"], function(cb) {
 		}),
 		new reporters.JUnitXmlReporter()
 	];
-	gulp.src(["lib/**/*.js"])
+	return gulp.src(["lib/**/*.js"])
 		.pipe(istanbul())
 		.pipe(istanbul.hookRequire())
 		.on("finish", function() {
@@ -46,6 +41,6 @@ gulp.task("test", ["compile:spec"], function(cb) {
 				.pipe(istanbul.writeReports({ reporters: ["text", "cobertura", "lcov"] }))
 				.on("end", cb);
 		});
-});
+}));
 
-gulp.task("default", ["compile"]);
+gulp.task("default", gulp.series("compile"));
