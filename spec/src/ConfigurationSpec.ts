@@ -17,10 +17,12 @@ describe("Configuration", function () {
 			};
 			var self = new Configuration({ content, logger });
 			self.removeOperationPlugin("bar@0.2");
-			expect(self.getContent().operationPlugins).toEqual([
+
+			var plugins = [
 				{ code: 10, script: "foo" },
 				{ code: 8, script: "anotherScript", options: { optvalue: true } }
-			]);
+			];
+			expect(self.getContent().operationPlugins).toEqual(plugins);
 		});
 
 		it("nothing removed for module not declared in operationPlugins", function () {
